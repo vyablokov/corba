@@ -82,7 +82,7 @@ public class HelloServer {
       // Ожидание обращений клиентов
       orb.run();
       } 	
-     catch (Exception e) {
+    catch (Exception e) {
       System.err.println("ОШИБКА: " + e);	// Выводим сообщение об ошибке
       e.printStackTrace(System.out);	// Выводим содержимое стека вызовов
       };
