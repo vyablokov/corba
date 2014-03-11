@@ -4,6 +4,9 @@ module Cell {
   interface TubeCallback {
     /* Принять сообщение message от номера fromNum */
     long sendSMS (in string fromNum, in string message);
+    long getSMS (in string fromNum, in string message);
+    void setRefDest( in TubeCallback ref);
+    TubeCallback getTubeCallback();
     /* Вернуть свой номер */
     string getNum();
     };
@@ -12,7 +15,7 @@ module Cell {
   interface Station {
     /* Зарегистрировать трубку с номером phoneNum, */
     /* для обратного вызова трубки использовать ссылку TubeCallback */
-    long register (in TubeCallback objRef, in string phoneNum);
+    long register (in TubeCallback objRef, in string phoneNum, in string to);
     /* Отправить сообщение message от номера fromNum к номеру toNum */
     long sendSMS (in string fromNum, in string toNum, in string message);
     };

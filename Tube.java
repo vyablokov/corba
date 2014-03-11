@@ -8,24 +8,34 @@ import java.io.*;
 // Класс вызова телефонной трубки
 class TubeCallbackServant extends TubeCallbackPOA {
  String myNum;	// Номер трубки
-
+ TubeCallback refdest;
  // Конструктор класса
  TubeCallbackServant (String num) {
    myNum = num;
+   refdest = null;
    };
 
  // Метод обработки принятого сообщения
  public int sendSMS(String fromNum, String message) {
-    System.out.println(myNum+": принято сообщение от "+fromNum+": "+message);
+    System.out.println("Tube (INFO): sent message from "+fromNum+": "+message);
     return (0);
     };
- 
+ public int getSMS(String fromNum, String message) {
+    System.out.println("Tube (INFO): Recieved message from "+fromNum+": "+message);
+    return (0);
+    };
  // Метод, возвращающий номер трубки
  public String getNum() {
     return (myNum);
     };
+ public void setRefDest(TubeCallback ref){
+  refdest = ref;
+ };
+ public TubeCallback getTubeCallback(){
+  return refdest;
+ };
   };
-
+ 
 // Класс, используемый для создания потока управления
 class ORBThread extends Thread {
   ORB myOrb;
@@ -46,7 +56,11 @@ public class Tube {
 
   public static void main(String args[]) {
     try {
-      String myNum = "1234";	// Номер трубки
+      String myNum = args[4];	// Номер трубки
+      // for (int i=0; i<5; i++) {
+      //   System.out.println("My Num: "+ args[i]);
+      // }
+      System.out.println("Tube (INFO): My Num: "+ myNum);
       // Создание и инициализация ORB
       ORB orb = ORB.init(args, null);
 
@@ -68,8 +82,11 @@ public class Tube {
       Station stationRef = StationHelper.narrow(ncRef.resolve(path));
 
       // Регистрация трубки в базовой станции
-      stationRef .register(ref, myNum);
-      System.out.println("Трубка зарегистрирована базовой станцией");
+      BufferedReader inpt  = new BufferedReader(new InputStreamReader(System.in));
+      System.out.println("Tube (DIALOG): Enter the number to connect: ");
+      String to = inpt.readLine();
+      stationRef .register(ref, myNum, to);
+      System.out.println("Tube (INFO): Tube was registered by base station");
 
       // Запуск ORB в отдельном потоке управления
       // для прослушивания вызовов трубки
@@ -78,17 +95,29 @@ public class Tube {
 
       // Бесконечный цикл чтения строк с клавиатуры и отсылки их
       // базовой станции
-      BufferedReader inpt  = new BufferedReader(new InputStreamReader(System.in));
+      
       String msg;
-      while (true) {
+      TubeCallback dest;
+      System.out.println("Tube (DIALOG): Enter your message: ");
+      while (true) { 
+        // station.checkref(nyNum, to);
         msg = inpt.readLine();
-        stationRef .sendSMS(myNum, "7890", msg);
+        dest = listener.getTubeCallback();
+        if(dest!=null){
+          break;
+        }
+        
+        stationRef .sendSMS(myNum, to, msg);
         // Обратите внимание: номер получателя 7890 в описанной ранее
         // реализации базовой станции роли не играет
         }
-
+        while(true){
+          dest.getSMS(myNum, msg);
+          msg = inpt.readLine();
+        }
       } catch (Exception e) {
-	 e.printStackTrace();
+	     e.printStackTrace();
+       System.out.println("Tube (ERROR): Base station not found");
       };
 
 
