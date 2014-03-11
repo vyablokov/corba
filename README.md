@@ -1,4 +1,0 @@
-corba
-=====
-
-Java+CORBA lab

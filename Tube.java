@@ -5,48 +5,58 @@ import org.omg.PortableServer.*;
 import org.omg.PortableServer.POA;
 import java.io.*;
 
+import java.util.Random;
+
 // Класс вызова телефонной трубки
 class TubeCallbackServant extends TubeCallbackPOA {
- String myNum;	// Номер трубки
+  
+  String myNum;	// Номер трубки
 
- // Конструктор класса
- TubeCallbackServant (String num) {
-   myNum = num;
-   };
-
- // Метод обработки принятого сообщения
- public int sendSMS(String fromNum, String message) {
-    System.out.println(myNum+": принято сообщение от "+fromNum+": "+message);
-    return (0);
-    };
- 
- // Метод, возвращающий номер трубки
- public String getNum() {
-    return (myNum);
-    };
+  // Конструктор класса
+  TubeCallbackServant ( String num ) {
+    myNum = num;
   };
+
+  // Метод обработки принятого сообщения
+  // Переименовать в getSMS!!!!!!!!!!!!!!!!!
+  public int sendSMS( String fromNum, String message ) {
+    System.out.println( myNum + ": Recieved a message from " + fromNum + ": " + message );
+    return (1);
+  };
+
+  // Метод, возвращающий номер трубки
+  public String getNum() {
+    return ( myNum );
+  };
+
+};
 
 // Класс, используемый для создания потока управления
 class ORBThread extends Thread {
+
   ORB myOrb;
 
   // Конструктор класса
   ORBThread(ORB orb) {
     myOrb = orb;
-    };
-
-   // Метод запуска потока
-   public void run() {
-     myOrb.run();
-     };
   };
+
+  // Метод запуска потока
+  public void run() {
+     myOrb.run();
+  };
+
+};
  
 // Класс, имитирующий телефонную трубку
 public class Tube {
 
+  private static Random random = new Random();
+  
   public static void main(String args[]) {
     try {
-      String myNum = "1234";	// Номер трубки
+      Integer num = random.nextInt(10000);
+      String myNum = num.toString();	// Номер трубки
       // Создание и инициализация ORB
       ORB orb = ORB.init(args, null);
 
@@ -69,7 +79,7 @@ public class Tube {
 
       // Регистрация трубки в базовой станции
       stationRef .register(ref, myNum);
-      System.out.println("Трубка зарегистрирована базовой станцией");
+      System.out.println("Tube (INFO): Your tube is registered by BaseStation as " + myNum);
 
       // Запуск ORB в отдельном потоке управления
       // для прослушивания вызовов трубки
@@ -80,15 +90,20 @@ public class Tube {
       // базовой станции
       BufferedReader inpt  = new BufferedReader(new InputStreamReader(System.in));
       String msg;
+      String toNum;
       while (true) {
+        System.out.println( "Tube (INFO): Enter the number: ");
+        toNum = inpt.readLine();
+        // System.out.println( toNum );
+        System.out.println( "Tube (INFO): Enter the message: ");
         msg = inpt.readLine();
-        stationRef .sendSMS(myNum, "7890", msg);
-        // Обратите внимание: номер получателя 7890 в описанной ранее
-        // реализации базовой станции роли не играет
+        // System.out.println( toNum );
+        stationRef.sendSMS(myNum, toNum, msg);
         }
 
       } catch (Exception e) {
-	 e.printStackTrace();
+	     e.printStackTrace();
+       System.out.println("Tube (ERROR): Cannot connect to base station.");
       };
 
 
